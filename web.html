@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>茧历 CocoonCV - 降维打击，重塑你的职业轨迹</title>
+    
+    <!-- 网页标签页 Logo (Favicon) -->
+    <!-- 默认占位：高清闪电图标。换成你自己的图标时，请修改 href 的值 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    
+    <!-- 引入高端字体 Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Vercel 部署友好：全 CDN 依赖 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        background: '#050505',
+                        surface: '#0a0a0a',
+                        surfaceBorder: '#ffffff1a',
+                        primary: '#3b82f6',
+                        neon: '#60a5fa',
+                    },
+                    backgroundImage: {
+                        'grid-pattern': 'linear-gradient(to right, #ffffff0a 1px, transparent 1px), linear-gradient(to bottom, #ffffff0a 1px, transparent 1px)',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'flow-line': 'flowLine 3s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0) rotateX(5deg) rotateY(-5deg)' },
+                            '50%': { transform: 'translateY(-15px) rotateX(8deg) rotateY(-2deg)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: 0, transform: 'translateY(40px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                        flowLine: {
+                            '0%': { transform: 'translateX(-100%)', opacity: 0 },
+                            '50%': { opacity: 1 },
+                            '100%': { transform: 'translateX(200%)', opacity: 0 },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 开启全局平滑滚动 */
+        html { scroll-behavior: smooth; }
+        
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .glass-nav {
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .glass-modal {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 高级金属质感银色文字渐变 */
+        .text-gradient-silver {
+            background: linear-gradient(180deg, #ffffff 0%, #888888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 核心关键词的高光渐变 */
+        .text-gradient-neon {
+            background: linear-gradient(135deg, #60a5fa 0%, #c084fc 50%, #f472b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bg-grid {
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse at center, black 10%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 10%, transparent 70%);
+        }
+
+        .hero-glow {
+            position: absolute;
+            width: 80vw;
+            height: 80vh;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0, 0, 0, 0) 60%);
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 隐藏两侧边缘以实现 Logo 无缝滚动渐隐 */
+        .logo-mask {
+            mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const Icon = ({ name, className = "", onClick }) => (
+            <i className={`fas fa-${name} ${className}`} onClick={onClick}></i>
+        );
+
+        function App() {
+            const [scrolled, setScrolled] = useState(false);
+            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+            
+            // 移除 showDownloadModal 状态，保留视频弹窗状态
+            const [showVideoModal, setShowVideoModal] = useState(false);
+
+            // 新增直接下载 APK 的处理函数
+            const handleDownload = () => {
+                // 【重点看这里】: "./CocoonCV_V_01.apk" 代表在当前网页的同级目录下寻找这个文件
+                const apkUrl = "./CocoonCV_V_01.apk"; 
+                const link = document.createElement('a');
+                link.href = apkUrl;
+                link.setAttribute('download', 'CocoonCV.apk'); // 触发系统下载机制
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            useEffect(() => {
+                const handleScroll = () => setScrolled(window.scrollY > 20);
+                window.addEventListener('scroll', handleScroll);
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('active');
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+                return () => {
+                    window.removeEventListener('scroll', handleScroll);
+                    observer.disconnect();
+                };
+            }, []);
+
+            // 锁定弹窗时的背景滚动 (已移除 showDownloadModal 依赖)
+            useEffect(() => {
+                if (showVideoModal || isMobileMenuOpen) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = 'unset';
+                }
+            }, [showVideoModal, isMobileMenuOpen]);
+
+            return (
+                <div className="min-h-screen relative selection:bg-blue-500/30">
+                    <div className="fixed inset-0 z-[-2] bg-background"></div>
+                    <div className="fixed inset-0 z-[-1] bg-grid-pattern bg-grid opacity-20"></div>
+
+                    {/* --- 顶部导航栏 --- */}
+                    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled || isMobileMenuOpen ? 'glass-nav py-4' : 'bg-transparent py-6'}`}>
+                        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative">
+                            {/* Logo */}
+                            <div className="flex items-center space-x-2.5 cursor-pointer group z-10" onClick={() => window.scrollTo(0,0)}>
+                                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.5)] group-hover:shadow-[0_0_25px_rgba(37,99,235,0.8)] transition-all">
+                                    <Icon name="bolt" className="text-white text-sm" />
+                                </div>
+                                <span className="text-xl font-bold tracking-tight text-white">茧历 <span className="text-blue-400 font-black">CocoonCV</span></span>
+                            </div>
+                            
+                            {/* 桌面端菜单 - 绝对居中，更显大气 */}
+                            <div className="hidden md:flex items-center space-x-10 text-[15px] font-medium text-gray-400 absolute left-1/2 -translate-x-1/2">
+                                <a href="#features" className="hover:text-white transition-colors py-2 relative group">
+                                    核心优势
+                                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                                {/* 修复了工作流的锚点链接 */}
+                                <a href="#workflow" className="hover:text-white transition-colors py-2 relative group">
+                                    工作流
+                                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                                <a href="#pricing" className="flex items-center hover:text-white transition-colors py-2 relative group">
+                                    <Icon name="crown" className="text-amber-500 mr-2 text-xs" /> PRO 会员
+                                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-500 group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                            </div>
+
+                            {/* 桌面端下载按钮 */}
+                            <div className="hidden md:flex items-center z-10">
+                                <button 
+                                    onClick={handleDownload}
+                                    className="relative group overflow-hidden rounded-full p-[1px]"
+                                >
+                                    <span className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full opacity-70 group-hover:opacity-100 transition-opacity duration-300"></span>
+                                    <div className="relative bg-white text-slate-950 px-6 py-2.5 rounded-full font-bold text-sm flex items-center shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all hover:bg-gray-50">
+                                        <Icon name="android" className="mr-2 text-lg text-green-600" />
+                                        下载App
+                                    </div>
+                                </button>
+                            </div>
+
+                            {/* 移动端汉堡菜单按钮 */}
+                            <div className="md:hidden flex items-center z-10">
+                                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-2">
+                                    <Icon name={isMobileMenuOpen ? "times" : "bars"} className="text-xl" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 移动端下拉菜单 */}
+                        {isMobileMenuOpen && (
+                            <div className="md:hidden absolute top-full left-0 w-full glass-nav border-t border-white/5 py-4 px-6 flex flex-col space-y-4 animate-fade-in-up">
+                                <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-white font-medium py-2">核心优势</a>
+                                <a href="#workflow" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-white font-medium py-2">工作流</a>
+                                <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-white font-medium py-2 flex items-center">
+                                    <Icon name="crown" className="text-amber-500 mr-2 text-sm" /> PRO 会员
+                                </a>
+                                <button onClick={() => { setIsMobileMenuOpen(false); handleDownload(); }} className="bg-white text-slate-950 w-full py-3 rounded-xl font-bold mt-4 flex items-center justify-center">
+                                    <Icon name="android" className="mr-2 text-green-600" /> 下载App
+                                </button>
+                            </div>
+                        )}
+                    </nav>
+
+                    {/* --- 首屏 Hero 区域 (全新超大居中排版) --- */}
+                    <main className="relative pt-40 pb-16 lg:pt-52 lg:pb-32 overflow-hidden flex flex-col items-center justify-center">
+                        <div className="hero-glow"></div>
+                        
+                        {/* 居中文案区 */}
+                        <div className="max-w-5xl mx-auto px-6 text-center relative z-20 animate-fade-in-up">
+                            <div className="inline-flex items-center px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-gray-300 text-xs font-bold tracking-widest uppercase mb-8 cursor-default backdrop-blur-md shadow-2xl">
+                                <span className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse shadow-[0_0_10px_#3b82f6]"></span>
+                                CocoonCV V2.0 独家大模型引擎已上线
+                            </div>
+                            
+                            <h1 className="text-[3.2rem] sm:text-[4.5rem] md:text-[6.5rem] font-black tracking-tighter leading-[1.05] mb-8">
+                                <span className="text-gradient-silver">破茧成蝶，</span><br className="hidden sm:block" />
+                                <span className="text-gradient-silver">重塑你的 </span>
+                                <span className="text-gradient-neon drop-shadow-[0_0_40px_rgba(96,165,250,0.5)]">职业轨迹</span>
+                            </h1>
+                            
+                            <p className="text-lg md:text-2xl text-gray-400 leading-relaxed mb-12 max-w-3xl mx-auto font-medium">
+                                告别传统简历的流水账。基于千万级大厂 JD 库训练的专属大模型，从 <strong className="text-white">HR 毒舌诊断</strong> 到 <strong className="text-white">STAR 法则语音重写</strong>，赋予你超越同龄人的竞争壁垒。
+                            </p>
+                            
+                            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                                <button 
+                                    onClick={handleDownload}
+                                    className="w-full sm:w-auto bg-white hover:bg-gray-100 text-slate-950 px-10 py-4 rounded-full font-black text-lg transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)] flex items-center justify-center active:scale-95"
+                                >
+                                    <Icon name="android" className="mr-2 text-xl text-green-600" /> 下载App
+                                </button>
+                                <button 
+                                    onClick={() => setShowVideoModal(true)}
+                                    className="w-full sm:w-auto glass-card text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center justify-center active:scale-95"
+                                >
+                                    <Icon name="play" className="mr-2" /> 观看演示
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 底部 3D 视差工作台展示 */}
+                        <div className="relative w-full max-w-6xl mx-auto mt-24 h-[300px] md:h-[450px] perspective-1000 animate-fade-in-up" style={{animationDelay: '0.3s'}}>
+                            {/* 底部遮罩让 UI 融入背景 */}
+                            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background to-transparent z-40"></div>
+                            
+                            {/* 中央主视窗模拟 */}
+                            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[90%] md:w-[800px] glass-card rounded-[2rem] border border-white/10 p-2 shadow-[0_50px_100px_rgba(0,0,0,0.8)] z-10 transform rotate-X-12 hover:rotate-X-6 transition-transform duration-700">
+                                <div className="h-8 border-b border-white/5 flex items-center px-4 space-x-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                                    <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                                    <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                                    <div className="mx-auto flex-1 text-center pr-10 text-[10px] text-gray-500 font-mono tracking-widest">CocoonCV Workspace</div>
+                                </div>
+                                <div className="h-64 md:h-96 bg-black/40 rounded-b-[1.5rem] flex p-6 gap-6 overflow-hidden">
+                                    <div className="w-1/4 h-full bg-white/5 rounded-xl border border-white/5"></div>
+                                    <div className="w-3/4 h-full bg-white/5 rounded-xl border border-white/5 p-6 flex flex-col gap-4">
+                                        <div className="w-1/2 h-6 bg-white/10 rounded-md"></div>
+                                        <div className="w-full h-px bg-white/5 my-2"></div>
+                                        <div className="w-full h-4 bg-white/5 rounded-md"></div>
+                                        <div className="w-5/6 h-4 bg-white/5 rounded-md"></div>
+                                        <div className="w-4/5 h-4 bg-white/5 rounded-md"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 左侧悬浮：JD 诊断卡片 */}
+                            <div className="absolute top-0 left-[5%] md:left-[10%] w-64 md:w-80 glass-card rounded-2xl p-5 animate-float z-30 hidden sm:block">
+                                <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+                                    <div className="flex items-center">
+                                        <Icon name="bullseye" className="text-blue-400 mr-2" />
+                                        <span className="font-bold text-sm">JD 狙击手</span>
+                                    </div>
+                                    <span className="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded font-bold border border-red-500/30">风险</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-14 h-14 rounded-full border-4 border-red-500/20 flex items-center justify-center mr-3 relative">
+                                        <span className="font-black text-lg text-white">32<span className="text-[10px]">%</span></span>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-white mb-1">匹配度极低</p>
+                                        <p className="text-[11px] text-gray-400 line-clamp-2">缺乏核心的量化数据产出，流水账表达过多。</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 右侧悬浮：语音改写卡片 */}
+                            <div className="absolute top-20 right-[5%] md:right-[5%] w-72 md:w-[340px] glass-card rounded-2xl p-5 animate-float-delayed z-30 shadow-2xl hidden sm:block">
+                                <div className="flex items-start mb-3">
+                                    <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center mr-3 shrink-0">
+                                        <Icon name="user" className="text-gray-400 text-[10px]" />
+                                    </div>
+                                    <div className="bg-slate-800/80 rounded-xl rounded-tl-sm p-2.5 text-[11px] text-gray-300 border border-white/5">
+                                        “上个月负责双十一扩容，没宕机。”
+                                    </div>
+                                </div>
+                                <div className="flex items-start">
+                                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-3 shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                                        <Icon name="bolt" className="text-white text-[10px]" />
+                                    </div>
+                                    <div className="bg-blue-600/20 border border-blue-500/30 rounded-xl rounded-tl-sm p-3 text-[11px] text-white">
+                                        <span className="text-[9px] text-blue-300 font-bold block mb-1">STAR 法则重构完成</span>
+                                        “主导双十一大促高并发保障，引入 Redis 缓存集群完成平滑扩容，成功抗住千万级 QPS 洪峰，实现 0 宕机记录。”
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* --- Logos 区 --- */}
+                    <section className="border-y border-white/5 bg-white/[0.01] py-10 backdrop-blur-sm reveal">
+                        <div className="max-w-7xl mx-auto px-6 logo-mask">
+                            <p className="text-center text-xs font-bold text-gray-500 tracking-[0.2em] uppercase mb-8">我们的用户成功斩获以下名企 Offer</p>
+                            <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+                                <div className="text-2xl font-black tracking-tighter cursor-default"><Icon name="tencent" className="mr-1.5"/> Tencent</div>
+                                <div className="text-2xl font-black tracking-tighter cursor-default"><Icon name="amazon" className="mr-1.5"/> ByteDance</div>
+                                <div className="text-2xl font-black tracking-tighter cursor-default"><Icon name="alipay" className="mr-1.5"/> Alibaba</div>
+                                <div className="text-2xl font-black tracking-tighter cursor-default">MEITUAN</div>
+                                <div className="text-2xl font-black tracking-tighter cursor-default">KUAISHOU</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- Bento Box 核心特性区 --- */}
+                    <section id="features" className="py-32 relative reveal">
+                        <div className="max-w-7xl mx-auto px-6">
+                            <div className="text-center mb-20">
+                                <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">不是美化器，是<span className="text-blue-500 drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">简历解析引擎</span></h2>
+                                <p className="text-gray-400 text-lg md:text-xl font-medium">基于 10 万+ 真实大厂筛选规则训练，彻底打通简历制作到投递的闭环。</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="md:col-span-2 glass-card rounded-[2rem] p-8 md:p-12 relative overflow-hidden group hover:border-red-500/30 transition-colors">
+                                    <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/10 rounded-full blur-[100px] group-hover:bg-red-500/20 transition-all"></div>
+                                    <div className="relative z-10">
+                                        <div className="w-14 h-14 bg-red-500/20 border border-red-500/30 rounded-2xl flex items-center justify-center text-red-400 mb-8">
+                                            <Icon name="fire" className="text-2xl" />
+                                        </div>
+                                        <h3 className="text-3xl font-bold mb-4 tracking-tight">HR 毒舌诊断 (JD Sniper)</h3>
+                                        <p className="text-gray-400 mb-8 max-w-md text-lg leading-relaxed">不要自我感动。粘贴目标岗位 JD，让冷酷无情的 AI HR 逐字剖析你的简历，精准定位你的经验缺失与表达漏洞。</p>
+                                        <div className="bg-background/80 border border-white/10 rounded-2xl p-5 font-mono text-sm text-red-400/90 shadow-inner">
+                                            > 正在分析 "高级前端工程师" JD...<br/>
+                                            <span className="text-red-500">> [警告] JD 要求"跨端开发"，您的简历命中率为 0。</span><br/>
+                                            > [建议] 建议挖掘过往项目中的 React Native/Flutter 经验。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="glass-card rounded-[2rem] p-8 md:p-12 relative overflow-hidden group hover:border-emerald-500/30 transition-colors">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] group-hover:bg-emerald-500/20 transition-all"></div>
+                                    <div className="relative z-10">
+                                        <div className="w-14 h-14 bg-emerald-500/20 border border-emerald-500/30 rounded-2xl flex items-center justify-center text-emerald-400 mb-8">
+                                            <Icon name="file-contract" className="text-2xl" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold mb-4 tracking-tight">100% ATS 穿透</h3>
+                                        <p className="text-gray-400 mb-8 leading-relaxed">摒弃华而不实的图表。我们输出符合 500 强企业系统抓取规范的极客版式，让机器秒懂你的实力。</p>
+                                        <div className="h-24 w-full bg-gradient-to-b from-emerald-900/20 to-transparent border border-emerald-500/20 rounded-2xl flex items-center justify-center">
+                                            <Icon name="check-circle" className="text-emerald-400 text-4xl opacity-50" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="glass-card rounded-[2rem] p-8 md:p-12 relative overflow-hidden group hover:border-blue-500/30 transition-colors">
+                                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] group-hover:bg-blue-500/20 transition-all"></div>
+                                    <div className="relative z-10">
+                                        <div className="w-14 h-14 bg-blue-500/20 border border-blue-500/30 rounded-2xl flex items-center justify-center text-blue-400 mb-8">
+                                            <Icon name="microphone-alt" className="text-2xl" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold mb-4 tracking-tight">语音重塑经历</h3>
+                                        <p className="text-gray-400 leading-relaxed">像聊天一样对手机说出工作内容，AI 瞬间利用 STAR 法则将其改写为极具杀伤力的专业描述。</p>
+                                    </div>
+                                </div>
+
+                                <div className="md:col-span-2 glass-card rounded-[2rem] p-8 md:p-12 relative overflow-hidden group flex flex-col md:flex-row items-center hover:border-green-500/30 transition-colors">
+                                    <div className="relative z-10 flex-1 md:pr-12 mb-8 md:mb-0">
+                                        <div className="inline-flex items-center px-4 py-1.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-xs font-bold mb-8 uppercase tracking-wider">微信生态完美打通</div>
+                                        <h3 className="text-3xl font-bold mb-4 tracking-tight">无缝跨应用导入</h3>
+                                        <p className="text-gray-400 text-lg leading-relaxed">解决国内职场人最大痛点。即使文件深藏在微信聊天记录中，只需“用其他应用打开”，即可一键导入引擎解析抽取结构化数据。</p>
+                                    </div>
+                                    <div className="w-full md:w-72 shrink-0 aspect-video bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center p-4 relative shadow-2xl group-hover:scale-105 transition-transform duration-500">
+                                         <div className="absolute -inset-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                                         <div className="bg-[#07C160] text-white w-full h-full rounded-2xl flex items-center justify-center font-bold text-base shadow-inner relative z-10">
+                                             <Icon name="weixin" className="fab mr-2 text-xl" /> 微信文档一键导入
+                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- 全新：工作流体验区 (Workflow) --- */}
+                    <section id="workflow" className="py-32 relative reveal border-t border-white/5 bg-white/[0.01]">
+                        <div className="max-w-7xl mx-auto px-6">
+                            <div className="text-center mb-24">
+                                <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">三步极简流，<span className="text-purple-500 drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]">释放核心战斗力</span></h2>
+                                <p className="text-gray-400 text-lg md:text-xl font-medium">剥离一切繁琐排版，把你宝贵的时间留给面试准备本身。</p>
+                            </div>
+
+                            <div className="relative">
+                                {/* 横向光导连接线 (仅桌面端显示) */}
+                                <div className="hidden md:block absolute top-[3.5rem] left-[15%] right-[15%] h-[2px] bg-white/5 rounded-full overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-flow-line opacity-80"></div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8 relative z-10">
+                                    {/* 步骤 1 */}
+                                    <div className="flex flex-col items-center text-center group">
+                                        <div className="w-28 h-28 rounded-[2rem] bg-surface border border-white/10 flex items-center justify-center mb-8 relative shadow-2xl group-hover:border-blue-500/50 group-hover:-translate-y-2 transition-all duration-300">
+                                            <div className="absolute inset-0 rounded-[2rem] bg-blue-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            {/* 数字标识 */}
+                                            <span className="absolute -top-4 -left-4 text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-gray-700 to-gray-900 drop-shadow-sm">01</span>
+                                            <Icon name="cloud-upload-alt" className="text-4xl text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)]" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold mb-4 tracking-tight">无界数据摄入</h3>
+                                        <p className="text-gray-400 leading-relaxed max-w-sm">打碎输入壁垒。支持微信内直接转发 PDF、手机直拍旧简历，或按下麦克风用大白话讲述你的经历。</p>
+                                    </div>
+                                    
+                                    {/* 步骤 2 */}
+                                    <div className="flex flex-col items-center text-center group">
+                                        <div className="w-28 h-28 rounded-[2rem] bg-surface border border-white/10 flex items-center justify-center mb-8 relative shadow-2xl group-hover:border-purple-500/50 group-hover:-translate-y-2 transition-all duration-300">
+                                            <div className="absolute inset-0 rounded-[2rem] bg-purple-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <span className="absolute -top-4 -left-4 text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-gray-700 to-gray-900 drop-shadow-sm">02</span>
+                                            <Icon name="brain" className="text-4xl text-purple-400 drop-shadow-[0_0_15px_rgba(192,132,252,0.5)]" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold mb-4 tracking-tight">大模型重塑引擎</h3>
+                                        <p className="text-gray-400 leading-relaxed max-w-sm">引擎启动。深度对齐目标大厂 JD 要求，自动挖掘被你遗漏的量化指标，并以专业 STAR 法则重写每一行业务逻辑。</p>
+                                    </div>
+                                    
+                                    {/* 步骤 3 */}
+                                    <div className="flex flex-col items-center text-center group">
+                                        <div className="w-28 h-28 rounded-[2rem] bg-surface border border-white/10 flex items-center justify-center mb-8 relative shadow-2xl group-hover:border-emerald-500/50 group-hover:-translate-y-2 transition-all duration-300">
+                                            <div className="absolute inset-0 rounded-[2rem] bg-emerald-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <span className="absolute -top-4 -left-4 text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-gray-700 to-gray-900 drop-shadow-sm">03</span>
+                                            <Icon name="rocket" className="text-4xl text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold mb-4 tracking-tight">极客降维输出</h3>
+                                        <p className="text-gray-400 leading-relaxed max-w-sm">告别花里胡哨的设计。一键生成 100% 符合 500 强 ATS 机器解析规范的高清 PDF 文档，直取面试入场券。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- Call To Action 底部横幅 --- */}
+                    <section id="pricing" className="py-32 relative overflow-hidden reveal">
+                        <div className="absolute inset-0 bg-blue-600/10"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-64 bg-blue-600/20 rounded-full blur-[120px]"></div>
+                        
+                        <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
+                            <h2 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter text-white">
+                                准备好收割 Offer 了吗？
+                            </h2>
+                            <p className="text-xl text-blue-200 mb-12 font-medium">
+                                立即下载 Android 客户端，每天释放 3 个免费 AI 诊断名额。
+                            </p>
+                            <button 
+                                onClick={handleDownload}
+                                className="bg-white text-slate-950 px-12 py-6 rounded-full font-black text-xl hover:scale-105 active:scale-95 transition-transform duration-300 shadow-[0_0_50px_rgba(255,255,255,0.4)] flex items-center justify-center mx-auto"
+                            >
+                                <Icon name="android" className="mr-3 text-3xl text-green-600" /> 下载App
+                            </button>
+                        </div>
+                    </section>
+
+                    {/* --- 极简底部 --- */}
+                    <footer className="border-t border-white/5 py-12 bg-background relative z-10">
+                        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+                            <div className="flex items-center space-x-2 mb-4 md:mb-0 opacity-50">
+                                <Icon name="bolt" className="text-white" />
+                                <span className="font-bold tracking-tight text-white">茧历 CocoonCV</span>
+                            </div>
+                            <div className="text-sm text-gray-500 font-medium">
+                                &copy; 2026 CocoonCV (茧历). All rights reserved.
+                            </div>
+                            <div className="flex space-x-8 mt-4 md:mt-0 text-gray-500 text-sm font-medium">
+                                <a href="#" className="hover:text-white transition-colors">隐私政策</a>
+                                <a href="#" className="hover:text-white transition-colors">服务条款</a>
+                            </div>
+                        </div>
+                    </footer>
+
+                    {/* ========================================== */}
+                    {/* 互动弹窗层 (Modals) */}
+                    {/* ========================================== */}
+
+                    {/* (已移除原来的二维码扫码弹窗) */}
+
+                    {/* 2. 视频演示弹窗 (Lightbox) */}
+                    {showVideoModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10">
+                            <div className="absolute inset-0 bg-black/90 backdrop-blur-xl transition-opacity" onClick={() => setShowVideoModal(false)}></div>
+                            <div className="w-full max-w-6xl aspect-video bg-black rounded-[2rem] border border-white/10 shadow-2xl relative z-10 animate-fade-in-up overflow-hidden flex items-center justify-center group">
+                                <button onClick={() => setShowVideoModal(false)} className="absolute top-6 right-6 z-20 text-white/50 hover:text-white bg-white/10 w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md transition-all border border-white/10 hover:bg-white/20">
+                                    <Icon name="times" className="text-xl" />
+                                </button>
+                                
+                                {/* 视频占位符 / 封面 */}
+                                <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center">
+                                    <div className="w-24 h-24 rounded-full bg-blue-600/20 border border-blue-500/50 flex items-center justify-center text-blue-500 mb-6 animate-pulse shadow-[0_0_50px_rgba(37,99,235,0.3)]">
+                                        <Icon name="play" className="text-4xl ml-2" />
+                                    </div>
+                                    <p className="text-gray-400 font-bold tracking-widest uppercase text-sm">产品演示视频加载中...</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                </div>
+            );
+        }
+
+        // 注入额外的动画 CSS
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes translateY {
+                0% { transform: translateY(0); }
+                50% { transform: translateY(200px); }
+                100% { transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
